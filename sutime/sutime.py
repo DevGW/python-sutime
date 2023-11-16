@@ -180,10 +180,24 @@ class SUTime(object):
             )
 
     def _start_jvm(self, additional_flags: Optional[List[str]]):
+        # Specify the path to your logging.properties file
+        # Using the current working directory to locate the file in the main app directory
+        main_app_directory = Path(os.getcwd())
+        logging_config_path = main_app_directory / 'logging.properties'
+
         flags = ['-Djava.class.path={0}'.format(self._classpath)]
+
+        # Check if the logging properties file exists
+        if logging_config_path.exists():
+            flags.append('-Djava.util.logging.config.file=' + str(logging_config_path))
+        else:
+            logging.warning("Logging properties file not found in main app directory: {0}".format(logging_config_path))
+
         if additional_flags:
             flags.extend(additional_flags)
+
         logging.info('jpype.isJVMStarted(): {0}'.format(jpype.isJVMStarted()))
+
         if not jpype.isJVMStarted():
             jpype.startJVM(jpype.getDefaultJVMPath(), *flags)
 
